@@ -7,7 +7,6 @@ import (
 )
 
 // RedisStringMap is a StringMap implementation that uses Redis as a backing store.
-// TODO(jake): Parameterize the Redis connection.
 type RedisStringMap struct {
 	redisClient *redis.Client
 	bucket      string
