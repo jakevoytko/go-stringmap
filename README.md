@@ -18,7 +18,7 @@ How?
 ----
 
 ```
-go get -u github.com/jakevoytko/stringmap
+go get -u github.com/jakevoytko/go-stringmap
 ```
 
 For examples of usages in test and programs, see github.com/jakevoytko/crbot.
