@@ -1,6 +1,8 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 load("@bazel_gazelle//:def.bzl", "gazelle")
 
+# gazelle:prefix github.com/jakevoytko/go-stringmap
+
 gazelle(
     name = "gazelle",
     prefix = "github.com/jakevoytko/go-stringmap",
