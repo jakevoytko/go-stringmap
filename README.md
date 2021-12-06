@@ -23,6 +23,11 @@ go get -u github.com/jakevoytko/go-stringmap
 
 For examples of usages in test and programs, see github.com/jakevoytko/crbot.
 
+Maintenance
+-----------
+
+Run `./update.sh` to update dependencies and manage Bazel deps.
+
 Potential changes
 -------------------
 

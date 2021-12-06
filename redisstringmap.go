@@ -1,20 +1,23 @@
 package stringmap
 
 import (
+	"context"
 	"errors"
 
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 )
 
 // RedisStringMap is a StringMap implementation that uses Redis as a backing store.
 type RedisStringMap struct {
+	ctx         context.Context
 	redisClient *redis.Client
 	bucket      string
 }
 
 // NewRedisStringMap works as advertised.
-func NewRedisStringMap(redisClient *redis.Client, bucket string) *RedisStringMap {
+func NewRedisStringMap(ctx context.Context, redisClient *redis.Client, bucket string) *RedisStringMap {
 	return &RedisStringMap{
+		ctx:         ctx,
 		redisClient: redisClient,
 		bucket:      bucket,
 	}
@@ -22,7 +25,7 @@ func NewRedisStringMap(redisClient *redis.Client, bucket string) *RedisStringMap
 
 // Has tests whether the map contains the key.
 func (m *RedisStringMap) Has(key string) (bool, error) {
-	result := m.redisClient.HExists(m.bucket, key)
+	result := m.redisClient.HExists(m.ctx, m.bucket, key)
 	if result.Err() != nil {
 		return false, result.Err()
 	}
@@ -31,7 +34,7 @@ func (m *RedisStringMap) Has(key string) (bool, error) {
 
 // Get retrieves the given key.
 func (m *RedisStringMap) Get(key string) (string, error) {
-	result := m.redisClient.HGet(m.bucket, key)
+	result := m.redisClient.HGet(m.ctx, m.bucket, key)
 	if result.Err() != nil {
 		return "", result.Err()
 	}
@@ -41,7 +44,7 @@ func (m *RedisStringMap) Get(key string) (string, error) {
 // Set sets the given key.
 func (m *RedisStringMap) Set(key, value string) error {
 	// Don't care about overwriting vs new.
-	if result := m.redisClient.HSet(m.bucket, key, value); result.Err() != nil {
+	if result := m.redisClient.HSet(m.ctx, m.bucket, key, value); result.Err() != nil {
 		return result.Err()
 	}
 	return nil
@@ -49,7 +52,7 @@ func (m *RedisStringMap) Set(key, value string) error {
 
 // Delete removes the key.
 func (m *RedisStringMap) Delete(key string) error {
-	result := m.redisClient.HDel(m.bucket, key)
+	result := m.redisClient.HDel(m.ctx, m.bucket, key)
 	if result.Err() != nil {
 		return result.Err()
 	} else if result.Val() != 1 {
@@ -60,7 +63,7 @@ func (m *RedisStringMap) Delete(key string) error {
 
 // GetAll returns all keys and values.
 func (m *RedisStringMap) GetAll() (map[string]string, error) {
-	result := m.redisClient.HGetAll(m.bucket)
+	result := m.redisClient.HGetAll(m.ctx, m.bucket)
 	if result.Err() != nil {
 		return nil, result.Err()
 	}
@@ -73,10 +76,10 @@ func (m *RedisStringMap) ScanKeys(pattern string) ([]string, error) {
 	// a map to try to produce a consistent snapshot.
 	keyMap := map[string]bool{}
 
-	scanCmd := m.redisClient.HScan(m.bucket, 0 /* cursor */, pattern, 100 /* count */)
+	scanCmd := m.redisClient.HScan(m.ctx, m.bucket, 0 /* cursor */, pattern, 100 /* count */)
 
 	iter := scanCmd.Iterator()
-	for iter.Next() {
+	for iter.Next(m.ctx) {
 		keyMap[iter.Val()] = true
 	}
 
